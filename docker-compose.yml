@@ -7,3 +7,4 @@ services:
       - .env
     volumes:
       - ./logs:/app/logs
+      - ./sqlite-data:/app/data  # เก็บ SQLite database
