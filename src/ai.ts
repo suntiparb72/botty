@@ -1,16 +1,21 @@
 import axios from "axios";
+import { getAllMemory } from "./memory";
 
-// ดึงค่าจากตัวแปรแวดล้อม
-const LITELLM_API_URL = process.env.LITELLM_API_URL || "http://localhost:4000/v1/chat/completions";
+const LITELLM_API_URL =
+  process.env.LITELLM_API_URL || "http://localhost:4000/v1/chat/completions";
 const LITELLM_API_KEY = process.env.LITELLM_API_KEY || "";
 const MODEL = process.env.MODEL || "gemini-1.5-flash";
 
 const chatHistory = new Map<number, Array<{ role: string; content: string }>>();
 
-const SYSTEM_PROMPT = "You are a helpful and friendly AI assistant. Respond in a natural and engaging way.";
+const SYSTEM_PROMPT =
+  "You are a helpful and friendly AI assistant. Respond in a natural and engaging way.";
 
 export async function chatWithAI(userId: number, userMessage: string) {
   try {
+    const memories = getAllMemory(userId);
+    // memories => text
+    const memoryText = memories.map((m) => `- ${m.message}`).join("\n");
 
     // ดึงประวัติการสนทนา ถ้ายังไม่มีให้ใช้ []
     let messages = chatHistory.get(userId) || [];
@@ -22,11 +27,16 @@ export async function chatWithAI(userId: number, userMessage: string) {
     // เพิ่มข้อความของผู้ใช้เข้าไปในประวัติ
     messages.push({ role: "user", content: userMessage });
 
+    // add user memories
+    if (memoryText) {
+      messages.push({ role: "system", content: `User Memory:\n${memoryText}` });
+    }
+
     const response = await axios.post(
       LITELLM_API_URL,
       {
-        model : MODEL,
-        messages
+        model: MODEL,
+        messages,
       },
       {
         headers: {
@@ -47,7 +57,6 @@ export async function chatWithAI(userId: number, userMessage: string) {
     chatHistory.set(userId, messages);
 
     return botReply;
-    
   } catch (error) {
     console.error("AI API Error:", error);
     return "Sorry, something went wrong with the AI service.";

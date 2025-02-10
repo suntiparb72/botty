@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  botty-bot:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./sqlite-data:/app/data  # เก็บ SQLite database
