@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 
-const db = new Database("./database.sqlite"); // สร้างตารางถ้ายังไม่มี
+const db = new Database(process.env.DATABASE_PATH); // สร้างตารางถ้ายังไม่มี
 db.exec(`
   CREATE TABLE IF NOT EXISTS chat_history (
     user_id INTEGER,
